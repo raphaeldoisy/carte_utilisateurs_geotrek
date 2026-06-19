@@ -23,3 +23,5 @@ venv/
 # Fichiers temporaires
 *.tmp
 *.swp
+
+temp_shapefile_cache/
