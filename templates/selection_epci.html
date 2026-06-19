@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Sélection des EPCI</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .counter {
+            text-align: center;
+            font-weight: bold;
+            margin: 0;
+            color: #7f8c8d;
+        }
+        #search {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        .upload-section {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 4px;
+            border: 1px dashed #ccc;
+        }
+        .upload-section label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        .upload-section input[type="file"] {
+            margin-bottom: 10px;
+        }
+        .upload-section button {
+            padding: 8px 15px;
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .content-wrapper {
+            display: flex;
+            gap: 20px;
+        }
+        .epci-list, .selected-list {
+            flex: 1;
+            height: 500px;
+            overflow-y: auto;
+            border: 1px solid #eee;
+            border-radius: 4px;
+            padding: 15px;
+            background: #fff;
+        }
+        .epci-item, .selected-item, .missing-item {
+            margin: 8px 0;
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+        }
+        .epci-item:last-child, .selected-item:last-child, .missing-item:last-child {
+            border-bottom: none;
+        }
+        .epci-item:hover {
+            background-color: #f5f7fa;
+        }
+        .epci-item input[type="checkbox"] {
+            margin-right: 10px;
+        }
+        .epci-item label, .selected-item label, .missing-item label {
+            cursor: pointer;
+            font-size: 15px;
+        }
+        .selected-list {
+            background-color: #f0f8ff;
+        }
+        .selected-title, .missing-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+        button[type="submit"], button[type="button"] {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 20px;
+        }
+        button[type="submit"]:hover, button[type="button"]:hover {
+            background-color: #2980b9;
+        }
+        .no-results {
+            color: #7f8c8d;
+            text-align: center;
+            font-style: italic;
+            padding: 20px;
+        }
+        .flash-message {
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        .flash-info {
+            background-color: #d4edff;
+            color: #2c3e50;
+            border: 1px solid #b3e0ff;
+        }
+        .flash-success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .flash-error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        .flash-warning {
+            background-color: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeeba;
+        }
+        .missing-list {
+            background-color: #fff8f0;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="margin-top: 0px; margin-bottom: 0px">Sélection des EPCI</h1>
+        <div class="relative mt-5 px-4" style="height: 90px;">
+             <!-- Texte centré -->
+            <div class="absolute left-1/2 transform -translate-x-1/2">
+                <p class="counter">Nombre total d'EPCI : {{ total_obj }}</p>
+            </div>
+            <!-- Bouton aligné à gauche -->
+            <div class="absolute left-0">
+                <a href="{{ url_for('index') }}"
+                style="padding: 10px 20px; background-color: #2ecc71; color: white; text-decoration: none; border-radius: 4px; display: inline-block;">
+                    Retour à la carte
+                </a>
+            </div>
+
+        </div>
+        
+        <!-- Messages flash -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash-message flash-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        
+        
+        
+        <input type="text" id="search" placeholder="Rechercher une EPCI..." onkeyup="filterEPCI()">
+        
+        <div class="content-wrapper">
+            <form method="POST" action="/save_epci" id="epciForm">
+                <!-- Liste des EPCI : d'abord les cochés, puis les autres triés par ordre alphabétique -->
+                 
+                <div class="epci-list" id="epciList">
+                    <!-- EPCI déjà cochés -->
+                     <details close>
+                     <summary>Liste EPCIS déjà sélectionnés (<span id="selectedCount">0</span>)</summary>
+                    {% for epci in selected_obj %}
+                        <div class="epci-item">
+                            <input type="checkbox" id="epci_{{ loop.index }}" name="selected_obj" value="{{ epci }}" checked onchange="updateSelectedList()">
+                            <label for="epci_{{ loop.index }}">{{ epci }}</label>
+                        </div>
+                    {% endfor %}
+                    </details>
+
+                    <!-- Autres EPCI (non cochés) -->
+                    {% for epci in obj_list %}
+                        {% if epci not in selected_obj %}
+                            <div class="epci-item">
+                                <input type="checkbox" id="epci_{{ loop.index + 1000 }}" name="selected_obj" value="{{ epci }}" onchange="updateSelectedList()">
+                                <label for="epci_{{ loop.index + 1000 }}">{{ epci }}</label>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </form>
+            
+            <div class="selected-list">
+                <div class="selected-title">EPCI sélectionnés</div>
+                <div id="selectedEPCIList">
+                    {% if selected_obj %}
+                        {% for epci in selected_obj %}
+                        <div class="selected-item">
+                            <label>{{ epci }}</label>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                    <div class="no-results">Aucun EPCI sélectionné</div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <button type="button" onclick="document.getElementById('epciForm').submit()">Générer epci.geojson</button>
+        <!-- Section pour importer un fichier -->
+        <div class="upload-section">
+            <form method="POST" enctype="multipart/form-data" action="{{ url_for('selection_epci') }}">
+                <label for="file">Importer une liste d'EPCI (fichier texte, CSV ou GeoJSON) :</label>
+                <input type="file" id="file" name="file" accept=".txt,.csv,.geojson">
+                <button type="submit">Charger et sélectionner</button>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        // Filtre la liste des EPCI en fonction de la recherche
+        function filterEPCI() {
+            const input = document.getElementById("search");
+            const filter = input.value.toLowerCase();
+            const epciList = document.getElementById("epciList");
+            const items = epciList.getElementsByClassName("epci-item");
+            
+            for (let i = 0; i < items.length; i++) {
+                const label = items[i].getElementsByTagName("label")[0];
+                const txtValue = label.textContent || label.innerText;
+                if (txtValue.toLowerCase().indexOf(filter) > -1) {
+                    items[i].style.display = "";
+                } else {
+                    items[i].style.display = "none";
+                }
+            }
+        }
+        
+        // Met à jour la liste des EPCI sélectionnés à droite
+        function updateSelectedList() {
+            const checkboxes = document.querySelectorAll('input[name="selected_obj"]:checked');
+            const selectedEPCIList = document.getElementById("selectedEPCIList");
+            const selectedCount = document.getElementById("selectedCount");
+            
+            selectedEPCIList.innerHTML = '';
+            
+            if (checkboxes.length === 0) {
+                selectedEPCIList.innerHTML = '<div class="no-results">Aucun EPCI sélectionné</div>';
+            } else {
+                checkboxes.forEach(checkbox => {
+                    const label = document.querySelector(`label[for="${checkbox.id}"]`);
+                    const item = document.createElement("div");
+                    item.className = "selected-item";
+                    item.innerHTML = `<label>${label.textContent}</label>`;
+                    selectedEPCIList.appendChild(item);
+                });
+            }
+            
+            selectedCount.textContent = checkboxes.length;
+        }
+        
+        // Initialise la liste des sélectionnés au chargement
+        document.addEventListener('DOMContentLoaded', updateSelectedList);
+    </script>
+</body>
+</html>

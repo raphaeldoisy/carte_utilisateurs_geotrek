@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+
+# Environnement
+.env
+.venv
+
+# Données locales (si tu veux les exclure)
+data/*.geojson
+data/*.shp
+
+# IDE
+.idea/
+.vscode/
+
+# Fichiers temporaires
+*.tmp
+*.swp

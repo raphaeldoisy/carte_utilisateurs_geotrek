@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carte des utilisateurs Geotrek</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="{{ url_for('static', filename='css/styles.css') }}" rel="stylesheet">
+    <style>
+        /* Style pour les ronds de couleur (plus petits) */
+        .color-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 8px;
+        }
+    </style>
+
+</head>
+<body class="bg-gray-100">
+   <header class="bg-white">
+  <nav class="mx-auto flex max-w-4xl items-center justify-between" aria-label="Global">
+    <div class="flex lg:flex-1">
+      <a href="#" class="-m-1.5 p-1.5">
+        <span class="sr-only">Geotrek</span>
+        <img class="w-auto" src="https://geotrek.fr/assets/img/logo.svg?&shade=600" alt="" />
+      </a>
+    </div>
+    <div class="hidden lg:flex text-4xl">
+      <a href="#" class="font-semibold text-gray-900">Carte des utilisateurs Geotrek</a>
+    </div>
+
+
+  </nav>
+    
+</header>
+
+    
+    <div class="map-container">
+        <!-- La carte Folium sera insérée ici -->
+        {{ map|safe }}
+    </div>
+    <div class="table-container p-4">
+            <!-- Résumé des couches chargées -->
+            <div style="margin-bottom: 20px; padding: 15px; background-color: #f8f9fa; border-radius: 8px;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    {% set total_objects = namespace(value=0) %}
+                    {% for obj_type, config in OBJECT_TYPES.items() %}
+                        {% set count = namespace(value=0) %}
+                        {% for feature in geojson_features if feature.layer_name == obj_type %}
+                            {% set count.value = count.value + 1 %}
+                        {% endfor %}
+                        {% set total_objects.value = total_objects.value + count.value %}
+                        <tr style="border-bottom: 1px solid #eee;">
+                            <td>
+                                <span class="color-dot" style="background-color: {{ config.color if config else '#867905' }};"></span>
+                            </td>
+                            <td style="padding: 5px 0; font-weight: bold;">{{ config.display_name }}</td>
+                            <td style="padding: 5px 0; text-align: right;">{{ count.value }} entités</td>
+                        </tr>
+                    {% endfor %}
+                    <tr style="border-top: 2px solid #ccc; font-weight: bold;">
+                        <td style="padding: 5px 0;">Total</td>
+                        <td style="padding: 5px 0; text-align: right;">{{ total_objects.value }} objets</td>
+                    </tr>
+                </table>
+            </div>
+            <!-- Boutons pour accéder aux sélections -->
+            <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; margin-top: 10px;">
+                {% for obj_type, config in OBJECT_TYPES.items() %}
+                    {% if config.selectable %}
+                        <a href="{{ url_for('selection_' ~ obj_type) }}"
+                        style="padding: 8px 12px; background-color: #3498db; color: white; text-decoration: none; border-radius: 4px; font-size: 14px;">
+                            {{ config.display_name }}
+                        </a>
+                    {% endif %}
+                {% endfor %}
+            </div>
+
+            <!-- Liste des couches 
+        <div class="space-y-2">
+            {% for layer_name, layer_features in geojson_features|groupby('layer_name') %}
+                {% set config = OBJECT_TYPES.get(layer_name, {}) %}
+                <details class="group">
+                    <summary class="flex justify-between items-center p-3 rounded-lg hover:bg-gray-50 cursor-pointer transition">
+                        <div class="flex items-center gap-3">
+                            
+                            <span class="font-medium text-gray-700">
+                                {{ config.display_name if config else layer_name }} : <span class="text-gray-500">{{ layer_features|length }}</span>
+                            </span>
+                        </div>
+                        <svg class="w-5 h-5 text-gray-500 transition-transform duration-200 group-open:rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </summary>
+                    <div class="p-3 bg-gray-50 rounded-b-lg mt-1">
+                        <table class="w-full">
+                            <tbody class="divide-y divide-gray-200">
+                                {% for feature in layer_features %}
+                                <tr class="hover:bg-white transition">
+                                    <td class="py-2 pl-2 text-sm text-gray-700">{{ feature.name }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </details>
+            {% endfor %}
+        </div>
+        -->
+    </div>
+</body>
+</html>

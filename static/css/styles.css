@@ -1,0 +1,24 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+ html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+        .map-container {
+            width: 75%;
+            height: 100%;
+            float: left;
+        }
+        .table-container {
+            width: 25%;
+            height: 100%;
+            float: right;
+            overflow-y: auto;
+            background-color: white;
+            box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
+        }
