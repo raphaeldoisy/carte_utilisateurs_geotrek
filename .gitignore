@@ -3,14 +3,18 @@ __pycache__/
 *.py[cod]
 *$py.class
 venv/
+*.pyc
+
+.gitignore.swp
+
 
 # Environnement
 .env
 .venv
 
 # Données locales (si tu veux les exclure)
-data/*.geojson
-data/*.shp
+
+
 
 # IDE
 .idea/
